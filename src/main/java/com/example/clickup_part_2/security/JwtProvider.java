@@ -14,7 +14,8 @@ public class JwtProvider {
     @Lazy
     JwtFilter jwtFilter;
 
-    private final long expireTime = 7 * 24 * 3600 * 1000;
+    private final long expireTime = 7L * 24 * 3600 * 1000;
+    private final Long expiration = 30*24*3600*1000L*1000;
     private final String secretWords = "mySecretWordsAreHereActually";
 
     public String generateToken(String username) {
@@ -22,7 +23,7 @@ public class JwtProvider {
                 .builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expireTime))
+                .setExpiration(new Date(System.currentTimeMillis() + expireTime + expiration))
                 .signWith(SignatureAlgorithm.HS512, secretWords)
                 .compact();
     }

@@ -13,7 +13,7 @@ public interface WorkspaceService { // aslida logikalarni service ni o'zida yozi
 
     ApiResponse addWorkspace(WorkspaceDTO workspaceDTO, User user);
 
-    ApiResponse updateWorkspace(Long id, WorkspaceDTO workspaceDTO);
+    ApiResponse updateWorkspace(WorkspaceDTO workspaceDTO);
 
     ApiResponse deleteWorkspace(Long id);
 

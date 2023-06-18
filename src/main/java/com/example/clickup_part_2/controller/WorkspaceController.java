@@ -34,7 +34,8 @@ public class WorkspaceController {
     public HttpEntity<?> updateWorkspace(
             @PathVariable Long id,
             @RequestBody WorkspaceDTO workspaceDTO) {
-        ApiResponse apiResponse = workspaceService.updateWorkspace(id, workspaceDTO);
+        ApiResponse apiResponse =
+                workspaceService.updateWorkspace(workspaceDTO);
         return ResponseEntity.status(apiResponse.isSuccess() ? 200 : 409).body(apiResponse);
     }
 
@@ -65,12 +66,17 @@ public class WorkspaceController {
     }
 
     @PostMapping("/addOrEditOrRemove/{id}")
-    public HttpEntity<?> addOrEditOrRemoveMember(@PathVariable Long id, @RequestBody MemberDTO memberDTO) {
-        ApiResponse apiResponse = workspaceService.addOrEditOrRemoveMember(id, memberDTO);
+    public HttpEntity<?> addOrEditOrRemoveMember(
+            @PathVariable Long id,
+            @RequestBody MemberDTO memberDTO) {
+        ApiResponse apiResponse =
+                workspaceService.addOrEditOrRemoveMember(id, memberDTO);
         return ResponseEntity.status(apiResponse.isSuccess() ? 200 : 409).body(apiResponse);
     }
     @PutMapping("/join")
-    public HttpEntity<?> joinToWorkspace(@RequestParam Long id, @CurrentUser User user){
+    public HttpEntity<?> joinToWorkspace(
+            @RequestParam Long id,
+            @CurrentUser User user){
         ApiResponse apiResponse = workspaceService.joinToWorkspace(id, user);
         return ResponseEntity.status(apiResponse.isSuccess()? 200 : 409).body(apiResponse);
     }

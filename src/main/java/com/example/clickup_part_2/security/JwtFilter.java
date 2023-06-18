@@ -34,21 +34,13 @@ public class JwtFilter extends OncePerRequestFilter {
             (HttpServletRequest request,
              HttpServletResponse response,
              FilterChain filterChain) throws ServletException, IOException {
-
         String authorization = request.getHeader("Authorization");
-
         if (authorization != null && authorization.startsWith("Bearer ")) {
-
             authorization = authorization.substring(7);
-
             String token = jwtProvider.getUsernameFromToken(authorization);
-
         User user = (User) authService.loadUserByUsername(token);
-
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>()));
-
-
         }
         filterChain.doFilter(request, response);
     }

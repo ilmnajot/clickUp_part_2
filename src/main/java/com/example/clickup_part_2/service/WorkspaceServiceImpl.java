@@ -9,6 +9,7 @@ import com.example.clickup_part_2.entity.payload.MemberDTO;
 import com.example.clickup_part_2.entity.payload.WorkspaceDTO;
 import com.example.clickup_part_2.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 
@@ -38,6 +39,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     @Autowired
     UserRepository userRepository;
+
     @Override
     public ApiResponse addWorkspace(WorkspaceDTO workspaceDTO, User user) {
         if (workspaceRepository.existsByOwnerIdAndName(user.getId(), workspaceDTO.getName())) {
@@ -54,29 +56,29 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         WorkspaceRole ownerRole = workspaceRoleRepository.save(new WorkspaceRole(
                 WorkspaceRoleName.ROLE_OWNER.name(),
-                null,
+                WorkspaceRoleName.ROLE_OWNER,
                 workspace
         ));
         WorkspaceRole adminRole = workspaceRoleRepository.save(new WorkspaceRole(
                 WorkspaceRoleName.ROLE_ADMIN.name(),
-                null,
+                WorkspaceRoleName.ROLE_ADMIN,
                 workspace
         ));
         WorkspaceRole guestRole = workspaceRoleRepository.save(new WorkspaceRole(
                 WorkspaceRoleName.ROLE_GUEST.name(),
-                null,
+                WorkspaceRoleName.ROLE_GUEST,
                 workspace
         ));
         WorkspaceRole memberRole = workspaceRoleRepository.save(new WorkspaceRole(
                 WorkspaceRoleName.ROLE_MEMBER.name(),
-                null,
+                WorkspaceRoleName.ROLE_MEMBER,
                 workspace
         ));
 
 
         // ownerga huquqlar berish
 
-        WorkspacePermissionName[] workspacePermissionNames= WorkspacePermissionName.values();
+        WorkspacePermissionName[] workspacePermissionNames = WorkspacePermissionName.values();
 
         List<WorkspacePermission> workspacePermissions = new ArrayList<>();
 
@@ -86,19 +88,20 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                     workspacePermissionName
             );
             workspacePermissions.add(permission);
-            if(workspacePermissionName.getWorkspaceRoleNames().contains(WorkspaceRoleName.ROLE_ADMIN)){
+            if (workspacePermissionName.getWorkspaceRoleNames().contains(WorkspaceRoleName.ROLE_ADMIN)) {
                 new WorkspacePermission(
                         adminRole,
                         workspacePermissionName
                 );
                 workspacePermissions.add(permission);
-            } if (workspacePermissionName.getWorkspaceRoleNames().contains(WorkspaceRoleName.ROLE_MEMBER)){
+            }
+            if (workspacePermissionName.getWorkspaceRoleNames().contains(WorkspaceRoleName.ROLE_MEMBER)) {
                 new WorkspacePermission(
                         memberRole,
                         workspacePermissionName
                 );
                 workspacePermissions.add(permission);
-            } else if (workspacePermissionName.getWorkspaceRoleNames().contains(WorkspaceRoleName.ROLE_GUEST)){
+            } else if (workspacePermissionName.getWorkspaceRoleNames().contains(WorkspaceRoleName.ROLE_GUEST)) {
                 new WorkspacePermission(
                         guestRole,
                         workspacePermissionName
@@ -120,7 +123,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     }
 
     @Override
-    public ApiResponse updateWorkspace(Long id, WorkspaceDTO workspaceDTO) {
+    public ApiResponse updateWorkspace(WorkspaceDTO workspaceDTO) {
         return null;
     }
 
@@ -154,41 +157,55 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     @Override
     public ApiResponse addOrEditOrRemoveMember(Long id, MemberDTO memberDTO) {
-        if (workspaceUserRepository.equals(RoleType.ADD)){
-        WorkspaceUser workspaceUser = new WorkspaceUser(
-                workspaceRepository.findById(id).orElseThrow(() -> new ResourceAccessException("id")),
-                userRepository.findById(memberDTO.getId()).orElseThrow(() -> new ResourceAccessException("id")),
-                workspaceRoleRepository.findById(memberDTO.getRoleId()).orElseThrow(() -> new ResourceAccessException("id")),
-                new Timestamp(System.currentTimeMillis()),
-                null
+        if (memberDTO.getRoleType().equals(RoleType.ADD)) {
+            WorkspaceUser workspaceUser = new WorkspaceUser(
+                    workspaceRepository.findById(id).orElseThrow(() -> new ResourceAccessException("id")),
+                    userRepository.findById(memberDTO.getId()).orElseThrow(() -> new ResourceAccessException("id")),
+                    workspaceRoleRepository.findById(memberDTO.getRoleId()).orElseThrow(() -> new ResourceAccessException("id")),
+                    new Timestamp(System.currentTimeMillis()),
+                    null
 
-        );
+            );
+            workspaceUserRepository.save(workspaceUser);
         }
         //TODO:EMAILGA INVITE XABAR YUBORISH
-        else if (workspaceUserRepository.equals(RoleType.UPDATE)){
-          WorkspaceUser workspaceUser =
-                  workspaceUserRepository.findByWorkspaceIdAndUserId(id, memberDTO.getId()).orElseGet(WorkspaceUser::new);
-        workspaceUser.setWorkspaceRole(workspaceRoleRepository.findById(memberDTO.getRoleId()).orElseThrow(() -> new ResourceAccessException("id")));
-        workspaceUserRepository.save(workspaceUser);
-        } else if (workspaceUserRepository.equals(RoleType.DELETE)) {
+        else if (memberDTO.getRoleType().equals(RoleType.UPDATE)) {
+            WorkspaceUser workspaceUser = workspaceUserRepository.findByWorkspaceIdAndUserId(id, memberDTO.getId()).orElseGet(WorkspaceUser::new);
+            workspaceUser.setWorkspaceRole(workspaceRoleRepository.findById(memberDTO.getRoleId()).orElseThrow(() -> new ResourceAccessException("id")));
+            workspaceUserRepository.save(workspaceUser);
+
+
+        } else if (memberDTO.getRoleType().equals(RoleType.DELETE)) {
 
             workspaceUserRepository.deleteByWorkspaceIdAndUserId(id, memberDTO.getId());
 
         }
         return new ApiResponse("successfully", true);
-}
+    }
 
     @Override
     public ApiResponse joinToWorkspace(Long id, User user) {
-        Optional<WorkspaceUser> byWorkspaceIdAndUserId = workspaceUserRepository.findByWorkspaceIdAndUserId(id, user.getId());
-        if (byWorkspaceIdAndUserId.isPresent()) {
-            WorkspaceUser workspaceUser = byWorkspaceIdAndUserId.get();
-            workspaceUser.setDateJoined(new Timestamp(System.currentTimeMillis()));
-            workspaceUserRepository.save(workspaceUser);
-            return new ApiResponse("joined successfully", true);
+        Optional<WorkspaceUser> optionalWorkspaceUser = workspaceUserRepository.findByWorkspaceIdAndUserId(id, user.getId());
+        try {
+            if (optionalWorkspaceUser.isPresent()) {
+                WorkspaceUser workspaceUser = optionalWorkspaceUser.get();
+                workspaceUser.setDateJoined(new Timestamp(System.currentTimeMillis()));
+                workspaceUserRepository.save(workspaceUser);
+                return new ApiResponse("joined successfully", true);
+            }
+        } catch (Exception e) {
+            return new ApiResponse("failed to join", false);
         }
-        else{
-            return new ApiResponse("user is not in this workspace", false);
-        }
+        return new ApiResponse("failed", false);
+//            Optional<WorkspaceUser> byWorkspaceIdAndUserId = workspaceUserRepository.findByWorkspaceIdAndUserId(id, user.getId());
+//        if (byWorkspaceIdAndUserId.isPresent()) {
+//            WorkspaceUser workspaceUser = byWorkspaceIdAndUserId.get();
+//            workspaceUser.setDateJoined(new Timestamp(System.currentTimeMillis()));
+//            workspaceUserRepository.save(workspaceUser);
+//            return new ApiResponse("joined successfully", true);
+//        }
+//        else{
+//            return new ApiResponse("user is not in this workspace", false);
+//        }
     }
 }

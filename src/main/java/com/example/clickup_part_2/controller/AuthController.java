@@ -52,7 +52,7 @@ public class AuthController {
 
     }
     @PutMapping("verifyEmail")
-    public HttpEntity<?> verifyEmail(@Valid
+    public HttpEntity<?> verifyEmail(
             @RequestParam String email,
             @RequestParam String emailCode){
         ApiResponse apiResponse = authService.verifyEmail(email, emailCode);
