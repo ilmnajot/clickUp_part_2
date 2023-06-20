@@ -1,6 +1,7 @@
 package com.example.clickup_part_2.controller;
 
 import com.example.clickup_part_2.entity.User;
+import com.example.clickup_part_2.entity.Workspace;
 import com.example.clickup_part_2.entity.annotation.CurrentUser;
 import com.example.clickup_part_2.entity.api.ApiResponse;
 import com.example.clickup_part_2.entity.payload.MemberDTO;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -34,8 +36,7 @@ public class WorkspaceController {
     public HttpEntity<?> updateWorkspace(
             @PathVariable Long id,
             @RequestBody WorkspaceDTO workspaceDTO) {
-        ApiResponse apiResponse =
-                workspaceService.updateWorkspace(workspaceDTO);
+        ApiResponse apiResponse = workspaceService.updateWorkspace(id, workspaceDTO);
         return ResponseEntity.status(apiResponse.isSuccess() ? 200 : 409).body(apiResponse);
     }
 
@@ -44,17 +45,15 @@ public class WorkspaceController {
         ApiResponse apiResponse = workspaceService.deleteWorkspace(id);
         return ResponseEntity.status(apiResponse.isSuccess() ? 200 : 409).body(apiResponse);
     }
-
     @GetMapping("/{id}")
-    public HttpEntity<?> getWorkspace(@PathVariable Long id) {
-        ApiResponse apiResponse = workspaceService.getWorkspace(id);
-        return ResponseEntity.status(apiResponse.isSuccess() ? 200 : 409).body(apiResponse);
+    public Workspace getWorkspace(@PathVariable Long workspaceId) {
+        Workspace workspace = workspaceService.getWorkspace(workspaceId);
+        return ResponseEntity.ok(workspace).getBody();
     }
-
-    @GetMapping
+    @GetMapping("/all")
     public HttpEntity<?> getWorkspaces() {
-        ApiResponse apiResponse = workspaceService.getWorkspaces();
-        return ResponseEntity.status(apiResponse.isSuccess() ? 200 : 409).body(apiResponse);
+        List<Workspace> workspaces = workspaceService.getWorkspaces();
+        return ResponseEntity.ok(workspaces);
     }
 
     @PutMapping("/changeOwner/{id}")
@@ -73,11 +72,12 @@ public class WorkspaceController {
                 workspaceService.addOrEditOrRemoveMember(id, memberDTO);
         return ResponseEntity.status(apiResponse.isSuccess() ? 200 : 409).body(apiResponse);
     }
+
     @PutMapping("/join")
     public HttpEntity<?> joinToWorkspace(
             @RequestParam Long id,
-            @CurrentUser User user){
+            @CurrentUser User user) {
         ApiResponse apiResponse = workspaceService.joinToWorkspace(id, user);
-        return ResponseEntity.status(apiResponse.isSuccess()? 200 : 409).body(apiResponse);
+        return ResponseEntity.status(apiResponse.isSuccess() ? 200 : 409).body(apiResponse);
     }
 }

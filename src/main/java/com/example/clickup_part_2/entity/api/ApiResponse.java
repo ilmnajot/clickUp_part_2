@@ -1,5 +1,6 @@
 package com.example.clickup_part_2.entity.api;
 
+import com.example.clickup_part_2.entity.Workspace;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,4 +11,5 @@ import lombok.Data;
 public class ApiResponse {
     private String message;
     private  boolean success;
+
 }

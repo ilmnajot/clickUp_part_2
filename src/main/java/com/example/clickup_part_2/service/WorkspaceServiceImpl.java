@@ -1,5 +1,4 @@
 package com.example.clickup_part_2.service;
-
 import com.example.clickup_part_2.entity.*;
 import com.example.clickup_part_2.entity.api.ApiResponse;
 import com.example.clickup_part_2.entity.enums.RoleType;
@@ -9,15 +8,19 @@ import com.example.clickup_part_2.entity.payload.MemberDTO;
 import com.example.clickup_part_2.entity.payload.WorkspaceDTO;
 import com.example.clickup_part_2.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.ResponseEntity.ok;
+
 
 @Service
 public class WorkspaceServiceImpl implements WorkspaceService {
@@ -121,11 +124,17 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         return new ApiResponse("workspace is saved successfully", true);
     }
+    //TODO UPDATE WORKSPACE AND COMPLETE
 
     @Override
-    public ApiResponse updateWorkspace(WorkspaceDTO workspaceDTO) {
+    public ApiResponse updateWorkspace(Long id, WorkspaceDTO workspaceDTO) {
+        boolean nameAndId = workspaceRepository.findByNameAndId(workspaceDTO.getName(), id);
+        if (nameAndId){
+
+        }
         return null;
     }
+
 
     @Override
     public ApiResponse deleteWorkspace(Long id) {
@@ -138,18 +147,20 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         }
     }
 
+ //    todo GET WORKSPACE BY ITS ID
     @Override
-    public ApiResponse getWorkspace(Long id) {
+    public Workspace getWorkspace(Long workspaceId) {
+        Optional<Workspace> optionalWorkspace = workspaceRepository.findById(workspaceId);
+        return optionalWorkspace.orElse(null);
+    };
 
-
-        return null;
+    //todo GET LIST OF WORKSPACE
+    @Override
+    public List<Workspace> getWorkspaces() {
+       return workspaceRepository.findAll();
     }
 
-    @Override
-    public ApiResponse getWorkspaces() {
-        return null;
-    }
-
+    //TODO CHANGE OWNER OF WORKSPACE BY ITS ID AND WORKSPACE ID
     @Override
     public ApiResponse changeOwner(Long id, UUID ownerId) {
         return null;
@@ -197,15 +208,5 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             return new ApiResponse("failed to join", false);
         }
         return new ApiResponse("failed", false);
-//            Optional<WorkspaceUser> byWorkspaceIdAndUserId = workspaceUserRepository.findByWorkspaceIdAndUserId(id, user.getId());
-//        if (byWorkspaceIdAndUserId.isPresent()) {
-//            WorkspaceUser workspaceUser = byWorkspaceIdAndUserId.get();
-//            workspaceUser.setDateJoined(new Timestamp(System.currentTimeMillis()));
-//            workspaceUserRepository.save(workspaceUser);
-//            return new ApiResponse("joined successfully", true);
-//        }
-//        else{
-//            return new ApiResponse("user is not in this workspace", false);
-//        }
     }
 }

@@ -1,11 +1,14 @@
 package com.example.clickup_part_2.service;
 
 import com.example.clickup_part_2.entity.User;
+import com.example.clickup_part_2.entity.Workspace;
 import com.example.clickup_part_2.entity.api.ApiResponse;
 import com.example.clickup_part_2.entity.payload.MemberDTO;
 import com.example.clickup_part_2.entity.payload.WorkspaceDTO;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -13,13 +16,13 @@ public interface WorkspaceService { // aslida logikalarni service ni o'zida yozi
 
     ApiResponse addWorkspace(WorkspaceDTO workspaceDTO, User user);
 
-    ApiResponse updateWorkspace(WorkspaceDTO workspaceDTO);
+    ApiResponse updateWorkspace(Long id, WorkspaceDTO workspaceDTO);
 
     ApiResponse deleteWorkspace(Long id);
 
-  ApiResponse getWorkspace(Long id);
+    Workspace getWorkspace(Long workspaceId);
 
-    ApiResponse getWorkspaces();
+    List<Workspace> getWorkspaces();
 
     ApiResponse changeOwner(Long id, UUID ownerId);
 

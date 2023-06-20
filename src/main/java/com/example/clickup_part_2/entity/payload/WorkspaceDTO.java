@@ -8,7 +8,6 @@ import java.util.UUID;
 
 @Data
 @AllArgsConstructor
-
 @NoArgsConstructor
 public class WorkspaceDTO {
     @NotEmpty(message="name cannot be empty")
